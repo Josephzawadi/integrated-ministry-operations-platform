@@ -8,12 +8,17 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Copy requirements
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application
 COPY . .
 
-# Run the application
+# Expose port
+EXPOSE 8000
+
+# Run application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
