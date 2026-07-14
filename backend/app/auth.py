@@ -72,7 +72,6 @@ def register_user(user: UserCreate, db: Session) -> User:
     db.commit()
     db.refresh(db_user)
     return db_user
-
 def authenticate_user(email: str, password: str, db: Session) -> User:
     """Authenticate user with email and password."""
     user = db.query(User).filter(User.email == email).first()
@@ -80,4 +79,26 @@ def authenticate_user(email: str, password: str, db: Session) -> User:
         return None
     if not verify_password(password, user.hashed_password):
         return None
+    if not user.is_active:
+        return None
     return user
+
+
+def require_role(*allowed_roles):
+    """Dependency factory for role-based route guards.
+
+    Usage:
+        Depends(require_role(UserRole.ADMIN, UserRole.MINISTRY_OFFICIAL))
+    """
+
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action",
+            )
+        return current_user
+
+    return role_checker
+
+
