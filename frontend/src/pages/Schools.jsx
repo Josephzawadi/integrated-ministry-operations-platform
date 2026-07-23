@@ -8,21 +8,25 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Alert from '../components/Alert';
 import { schoolsAPI } from '../api/endpoints';
 
+const emptyForm = {
+  name: '',
+  registration_number: '',
+  county: '',
+  subcounty: '',
+  constituency: '',
+  school_type: '',
+  contact_person: '',
+  contact_phone: '',
+  contact_email: '',
+};
+
 const Schools = () => {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    registration_number: '',
-    county: '',
-    school_type: '',
-    principal_name: '',
-    contact_phone: '',
-    email: '',
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
     fetchSchools();
@@ -44,18 +48,20 @@ const Schools = () => {
   const handleOpenModal = (school = null) => {
     if (school) {
       setSelectedSchool(school);
-      setFormData(school);
+      setFormData({
+        name: school.name || '',
+        registration_number: school.registration_number || '',
+        county: school.county || '',
+        subcounty: school.subcounty || '',
+        constituency: school.constituency || '',
+        school_type: school.school_type || '',
+        contact_person: school.contact_person || '',
+        contact_phone: school.contact_phone || '',
+        contact_email: school.contact_email || '',
+      });
     } else {
       setSelectedSchool(null);
-      setFormData({
-        name: '',
-        registration_number: '',
-        county: '',
-        school_type: '',
-        principal_name: '',
-        contact_phone: '',
-        email: '',
-      });
+      setFormData(emptyForm);
     }
     setShowModal(true);
   };
@@ -69,11 +75,10 @@ const Schools = () => {
     try {
       if (selectedSchool) {
         await schoolsAPI.update(selectedSchool.id, formData);
-        setError(null);
       } else {
         await schoolsAPI.create(formData);
-        setError(null);
       }
+      setError(null);
       await fetchSchools();
       handleCloseModal();
     } catch (err) {
@@ -134,8 +139,8 @@ const Schools = () => {
                     <p className="font-medium">{school.school_type}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Principal</p>
-                    <p className="font-medium">{school.principal_name}</p>
+                    <p className="text-gray-600">Contact Person</p>
+                    <p className="font-medium">{school.contact_person || '—'}</p>
                   </div>
                 </div>
               </div>
@@ -195,18 +200,34 @@ const Schools = () => {
             value={formData.county}
             onChange={(e) => setFormData({ ...formData, county: e.target.value })}
             placeholder="Enter county"
+            required
+          />
+          <Input
+            label="Subcounty"
+            value={formData.subcounty}
+            onChange={(e) => setFormData({ ...formData, subcounty: e.target.value })}
+            placeholder="Enter subcounty"
+            required
+          />
+          <Input
+            label="Constituency"
+            value={formData.constituency}
+            onChange={(e) => setFormData({ ...formData, constituency: e.target.value })}
+            placeholder="Enter constituency"
+            required
           />
           <Input
             label="School Type"
             value={formData.school_type}
             onChange={(e) => setFormData({ ...formData, school_type: e.target.value })}
             placeholder="e.g., Primary, Secondary"
+            required
           />
           <Input
-            label="Principal Name"
-            value={formData.principal_name}
-            onChange={(e) => setFormData({ ...formData, principal_name: e.target.value })}
-            placeholder="Enter principal name"
+            label="Contact Person"
+            value={formData.contact_person}
+            onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+            placeholder="Enter contact person name"
           />
           <Input
             label="Contact Phone"
@@ -215,11 +236,11 @@ const Schools = () => {
             placeholder="Enter phone number"
           />
           <Input
-            label="Email"
+            label="Contact Email"
             type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="Enter email"
+            value={formData.contact_email}
+            onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+            placeholder="Enter contact email"
           />
         </div>
       </Modal>
